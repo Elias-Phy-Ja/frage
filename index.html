@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eine Frage an dich…</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg1:#ffd6e8;--bg2:#ffeaf4;--bg3:#fff5fb;
+    --pink:#ff5fa2;--pink-deep:#e63d86;--pink-soft:#ffb3d4;
+    --cream:#fff9fc;--ink:#5a2a45;--ink-soft:#9c6a86;
+    --green:#4ecb8f;--green-deep:#2fa86f;--shadow:rgba(230,61,134,.28);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Nunito',sans-serif;
+    background:linear-gradient(160deg,var(--bg1),var(--bg2) 55%,var(--bg3));
+    background-attachment:fixed;
+    color:var(--ink);min-height:100dvh;display:flex;align-items:flex-start;
+    justify-content:center;padding:24px;overflow-x:hidden;position:relative;
+  }
+  .wrap{width:100%;min-height:calc(100dvh - 48px);display:flex;
+    align-items:center;justify-content:center;}
+  .floaty{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .floaty span{position:absolute;bottom:-40px;font-size:22px;opacity:.5;
+    animation:rise linear infinite;filter:saturate(1.1);}
+  @keyframes rise{to{transform:translateY(-115dvh) rotate(360deg);opacity:0;}}
+
+  .card{position:relative;z-index:1;width:100%;max-width:460px;background:var(--cream);
+    border-radius:34px;padding:34px 28px 30px;
+    box-shadow:0 24px 60px -18px var(--shadow), 0 0 0 6px rgba(255,255,255,.6);
+    text-align:center;animation:pop .55s cubic-bezier(.2,1.3,.4,1) both;}
+  @keyframes pop{from{opacity:0;transform:scale(.85) translateY(20px);}to{opacity:1;transform:none;}}
+  .card.celebrate{animation:pop .55s cubic-bezier(.2,1.3,.4,1) both, wiggle 2.6s ease-in-out .6s infinite;}
+  @keyframes wiggle{0%,100%{transform:rotate(0);}25%{transform:rotate(.8deg);}75%{transform:rotate(-.8deg);}}
+
+  .media{margin-bottom:12px;min-height:10px;display:flex;justify-content:center;align-items:center;}
+  .media img{max-width:180px;max-height:160px;width:auto;border-radius:20px;
+    box-shadow:0 10px 26px -10px var(--shadow);display:none;}
+  .media .emoji-fallback{font-size:54px;line-height:1;display:inline-block;
+    animation:bob 2.4s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-8px) rotate(4deg);}}
+  .media .emoji-fallback.party{animation:party 1s ease-in-out infinite;}
+  @keyframes party{0%,100%{transform:translateY(0) rotate(-8deg) scale(1);}50%{transform:translateY(-14px) rotate(8deg) scale(1.12);}}
+
+  h1{font-family:'Fredoka',sans-serif;font-weight:600;font-size:clamp(25px,6.5vw,34px);
+    color:var(--pink-deep);line-height:1.15;margin-bottom:8px;transition:opacity .25s;}
+  h1.bounce{animation:hbounce .7s cubic-bezier(.2,1.4,.4,1);}
+  @keyframes hbounce{0%{transform:scale(.6);opacity:0;}60%{transform:scale(1.12);}100%{transform:scale(1);opacity:1;}}
+  .sub{font-size:16px;color:var(--ink-soft);margin-bottom:22px;font-weight:600;}
+  .btns{display:flex;flex-direction:column;gap:14px;}
+  button{font-family:'Fredoka',sans-serif;font-weight:500;font-size:19px;border:none;
+    border-radius:18px;padding:16px 22px;cursor:pointer;
+    transition:transform .15s ease, box-shadow .2s ease, background .2s;
+    -webkit-tap-highlight-color:transparent;}
+  button:active{transform:scale(.96);}
+  .yes{background:linear-gradient(135deg,var(--pink),var(--pink-deep));color:#fff;
+    box-shadow:0 10px 24px -8px var(--shadow);}
+  .yes:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 16px 30px -10px var(--shadow);}
+  .no{background:#ffe6f0;color:var(--ink-soft);}
+  .no:hover{background:#ffd9e9;}
+  .step{display:none;animation:fade .4s ease both;}
+  .step.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+  .field-label{font-family:'Fredoka',sans-serif;font-size:15px;color:var(--pink-deep);
+    font-weight:500;text-align:left;margin:16px 4px 7px;display:block;}
+  .opt{font-weight:400;color:var(--ink-soft);font-size:13px;}
+  input[type=date],input[type=time],input[type=text],textarea{width:100%;
+    font-family:'Nunito',sans-serif;font-weight:700;font-size:16px;color:var(--ink);
+    background:#fff;border:2.5px solid var(--pink-soft);border-radius:16px;
+    padding:13px 15px;outline:none;transition:border .2s;}
+  textarea{resize:vertical;min-height:56px;line-height:1.4;}
+  input:focus,textarea:focus{border-color:var(--pink);}
+  input::placeholder,textarea::placeholder{color:#cba6bb;font-weight:600;}
+
+  /* ===== Tag-Karten ===== */
+  .days{display:flex;flex-direction:column;gap:12px;}
+  .day-card{background:#fff5fa;border:2px solid var(--pink-soft);border-radius:20px;
+    padding:14px;text-align:left;animation:fade .3s ease both;}
+  .day-card .top{display:flex;gap:8px;align-items:center;}
+  .day-card .top input[type=date]{flex:1;}
+  .day-del{flex:0 0 auto;width:46px;height:46px;padding:0;font-size:18px;border-radius:14px;
+    background:#ffe0ec;color:var(--pink-deep);display:flex;align-items:center;justify-content:center;}
+  .day-del:hover{background:#ffd0e2;}
+  .day-row2{display:flex;align-items:center;justify-content:space-between;margin-top:11px;gap:10px;}
+  .switch-label{font-family:'Fredoka',sans-serif;font-weight:500;font-size:14.5px;color:var(--ink);
+    display:flex;align-items:center;gap:7px;}
+  /* iOS Switch */
+  .switch{position:relative;display:inline-block;width:50px;height:30px;flex:0 0 auto;}
+  .switch input{opacity:0;width:0;height:0;}
+  .slider{position:absolute;inset:0;cursor:pointer;background:#e6c6d6;border-radius:30px;
+    transition:background .25s;}
+  .slider:before{content:"";position:absolute;height:24px;width:24px;left:3px;top:3px;
+    background:#fff;border-radius:50%;transition:transform .25s;box-shadow:0 2px 5px rgba(0,0,0,.2);}
+  .switch input:checked + .slider{background:var(--green);}
+  .switch input:checked + .slider:before{transform:translateX(20px);}
+  .day-time{margin-top:11px;}
+  .day-time.hidden{display:none;}
+  .day-time label{font-size:13px;color:var(--ink-soft);font-weight:700;display:block;margin:0 2px 6px;}
+  .day-time input[type=time]{width:auto;max-width:150px;}
+
+  .add-day{margin-top:12px;width:100%;background:#fff0f7;color:var(--pink-deep);
+    border:2px dashed var(--pink-soft);font-size:15px;padding:12px;}
+  .add-day:hover{background:#ffe6f2;}
+  .add-day:disabled{opacity:.4;cursor:not-allowed;}
+
+  .preview{background:linear-gradient(135deg,#fff0f7,#ffe9f3);border-radius:18px;
+    padding:16px 18px;margin-top:20px;text-align:left;border:2px solid var(--pink-soft);display:none;}
+  .preview.show{display:block;animation:fade .35s ease both;}
+  .preview h3{font-family:'Fredoka',sans-serif;font-size:14px;color:var(--pink-deep);
+    margin-bottom:8px;font-weight:600;}
+  .preview p{font-size:14px;line-height:1.55;color:var(--ink);white-space:pre-wrap;font-weight:600;}
+
+  .notify{margin-top:18px;background:linear-gradient(135deg,var(--green),var(--green-deep));
+    color:#fff;width:100%;box-shadow:0 12px 26px -8px rgba(47,168,111,.5);
+    display:flex;align-items:center;justify-content:center;gap:10px;}
+  .notify:hover{transform:translateY(-2px) scale(1.02);}
+  .notify:not(:disabled){animation:ready 1.8s ease-in-out infinite;}
+  @keyframes ready{0%,100%{box-shadow:0 12px 26px -8px rgba(47,168,111,.5);}50%{box-shadow:0 12px 34px -6px rgba(47,168,111,.8);}}
+  .notify:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;animation:none;}
+  .hint{font-size:13px;color:var(--ink-soft);margin-top:14px;font-weight:600;}
+  .back{background:none;color:var(--ink-soft);font-size:14px;padding:8px;margin-top:8px;
+    text-decoration:underline;font-family:'Nunito';font-weight:700;}
+  .back:hover{color:var(--pink-deep);}
+  @media (prefers-reduced-motion:reduce){*{animation:none !important;}}
+</style>
+</head>
+<body>
+<div class="floaty" id="floaty"></div>
+<div class="wrap">
+<div class="card" id="card">
+  <div class="step active" id="step-ask">
+    <div class="media">
+      <img id="img-ask" src="gif-frage.gif" alt="">
+      <span class="emoji-fallback" id="emo-ask">🥺💕</span>
+    </div>
+    <h1 id="ask-title">Gehst du mit mir auf ein Date?</h1>
+    <div class="btns">
+      <button class="yes" id="yesBtn">Ja, sehr gerne! 💖</button>
+      <button class="no" id="noBtn">Nein</button>
+    </div>
+  </div>
+
+  <div class="step" id="step-plan">
+    <div class="media">
+      <img id="img-yes" src="gif-yes.gif" alt="">
+      <span class="emoji-fallback party">🎉</span>
+    </div>
+    <h1 class="bounce" id="yes-title">Yesss! 🥳</h1>
+    <p class="sub">Lass uns was abmachen 💕</p>
+
+    <label class="field-label">Welche Tage passen dir? <span class="opt">(einen oder mehrere)</span></label>
+    <div class="days" id="daysWrap"></div>
+    <button class="add-day" id="addDay">＋ weiteren Tag vorschlagen</button>
+
+    <label class="field-label" for="actInput">Hast du eine Idee, was du machen willst? <span class="opt">(optional)</span></label>
+    <input type="text" id="actInput" placeholder="z.B. Kino, spazieren, baden...">
+
+    <label class="field-label" for="locInput">Wo? <span class="opt">(optional)</span></label>
+    <input type="text" id="locInput" placeholder="z.B. am See, bei dir, egal…">
+
+    <label class="field-label" for="msgInput">Willst du mir noch was sagen? <span class="opt">(optional)</span></label>
+    <textarea id="msgInput" placeholder="z.B. Ich freue mich drauf! 💬"></textarea>
+
+    <div class="preview" id="preview">
+      <h3>📬 Das schickst du:</h3>
+      <p id="previewText"></p>
+    </div>
+
+    <button class="notify" id="notifyBtn" disabled>
+      <span>📲 Elias benachrichtigen</span>
+    </button>
+    <p class="hint">Öffnet WhatsApp mit fertiger Nachricht du musst sie nur noch senden.</p>
+    <button class="back" id="backBtn">← zurück</button>
+  </div>
+</div>
+</div>
+<script>
+  const ELIAS_NUMBER = "41764544493";
+  const $ = id => document.getElementById(id);
+
+  const E = {
+    herz:    String.fromCodePoint(0x1F495),
+    kalender:String.fromCodePoint(0x1F4C5),
+    uhr:     String.fromCodePoint(0x23F0),
+    ort:     String.fromCodePoint(0x1F4CD),
+    idee:    String.fromCodePoint(0x1F4A1),
+    sprech:  String.fromCodePoint(0x1F4AC),
+    love:    String.fromCodePoint(0x1F970)
+  };
+
+  // Name aus ?name= (case-insensitive)
+  (function(){
+    const params = new URLSearchParams(window.location.search);
+    let name=""; for(const [k,v] of params){ if(k.toLowerCase()==="name"){name=v;break;} }
+    name=(name||"").trim().replace(/[<>]/g,"").slice(0,30);
+    if(name) $("ask-title").textContent="Hey "+name+", gehst du mit mir auf ein Date?";
+  })();
+
+  function showImg(img){
+    if(img.naturalWidth>0){
+      img.style.display="block";
+      const emo=img.parentElement.querySelector(".emoji-fallback");
+      if(emo) emo.style.display="none";
+    }
+  }
+  function setupGif(imgId){
+    const img=$(imgId); if(!img) return;
+    img.onload=()=>showImg(img);
+    img.onerror=()=>{ img.style.display="none"; };
+    // Falls das Bild beim Anhängen des Handlers schon geladen ist (Cache): sofort prüfen
+    if(img.complete) showImg(img);
+  }
+  setupGif("img-ask"); setupGif("img-yes");
+
+  const hearts=["💖","💕","💗","🌸","✨","💞"];
+  const floaty=$("floaty");
+  function spawnHearts(count){
+    for(let i=0;i<count;i++){
+      const s=document.createElement("span");
+      s.textContent=hearts[Math.floor(Math.random()*hearts.length)];
+      s.style.left=Math.random()*100+"%";
+      s.style.fontSize=(16+Math.random()*22)+"px";
+      s.style.animationDuration=(7+Math.random()*8)+"s";
+      s.style.animationDelay=(-Math.random()*12)+"s";
+      floaty.appendChild(s);
+    }
+  }
+  spawnHearts(14);
+
+  // ===== YES =====
+  $("yesBtn").addEventListener("click",()=>{
+    $("step-ask").classList.remove("active");
+    $("step-plan").classList.add("active");
+    $("card").classList.add("celebrate");
+    spawnHearts(10);
+    burst(); setTimeout(burst,350); setTimeout(burst,700);
+  });
+  $("backBtn").addEventListener("click",()=>{
+    $("step-plan").classList.remove("active");
+    $("step-ask").classList.add("active");
+    $("card").classList.remove("celebrate");
+  });
+
+  // ===== Tag-Karten =====
+  const daysWrap=$("daysWrap"), addDayBtn=$("addDay");
+  const todayStr=new Date().toISOString().split("T")[0];
+  let dayCounter=0;
+  const MAX_DAYS=5;
+
+  function addDayCard(){
+    if(daysWrap.children.length>=MAX_DAYS) return;
+    dayCounter++;
+    const id=dayCounter;
+    const card=document.createElement("div");
+    card.className="day-card";
+    card.innerHTML=
+      '<div class="top">'+
+        '<input type="date" class="d-date" min="'+todayStr+'" value="'+todayStr+'">'+
+        '<button class="day-del" title="Tag entfernen">✕</button>'+
+      '</div>'+
+      '<div class="day-row2">'+
+        '<span class="switch-label">🌞 Ganztägig</span>'+
+        '<label class="switch"><input type="checkbox" class="d-allday"><span class="slider"></span></label>'+
+      '</div>'+
+      '<div class="day-time">'+
+        '<label>Um wie viel Uhr? (optional)</label>'+
+        '<input type="time" class="d-time" value="12:00">'+
+      '</div>';
+
+    const dateInp=card.querySelector(".d-date");
+    const allday=card.querySelector(".d-allday");
+    const timeWrap=card.querySelector(".day-time");
+    const delBtn=card.querySelector(".day-del");
+
+    dateInp.addEventListener("input",update);
+    dateInp.addEventListener("change",update);
+    allday.addEventListener("change",()=>{
+      if(allday.checked){ timeWrap.classList.add("hidden"); card.querySelector(".d-time").value=""; }
+      else timeWrap.classList.remove("hidden");
+      update();
+    });
+    card.querySelector(".d-time").addEventListener("input",update);
+    card.querySelector(".d-time").addEventListener("change",update);
+    delBtn.addEventListener("click",()=>{
+      if(daysWrap.children.length>1){ card.remove(); }
+      else { dateInp.value=""; allday.checked=false; timeWrap.classList.remove("hidden"); card.querySelector(".d-time").value=""; }
+      refreshAddBtn(); update();
+    });
+
+    daysWrap.appendChild(card);
+    refreshAddBtn();
+    update();
+  }
+  function refreshAddBtn(){ addDayBtn.disabled = daysWrap.children.length>=MAX_DAYS; }
+  addDayBtn.addEventListener("click",addDayCard);
+
+  // ===== Felder =====
+  const actInput=$("actInput"), locInput=$("locInput"), msgInput=$("msgInput"),
+        notifyBtn=$("notifyBtn"), preview=$("preview"), previewText=$("previewText");
+
+  function fmtDate(val){
+    if(!val) return "";
+    const d=new Date(val+"T00:00:00");
+    return d.toLocaleDateString("de-CH",{weekday:"long",day:"numeric",month:"long"});
+  }
+  function collectDays(){
+    return [...daysWrap.querySelectorAll(".day-card")].map(card=>{
+      const date=card.querySelector(".d-date").value;
+      const allday=card.querySelector(".d-allday").checked;
+      const time=card.querySelector(".d-time").value;
+      return {date,allday,time};
+    }).filter(d=>d.date);
+  }
+  function dayLine(d){
+    let line=fmtDate(d.date);
+    if(d.allday) line+=" den ganzen Tag";
+    else if(d.time) line+=" um "+d.time+" Uhr";
+    return line;
+  }
+  function buildMessage(){
+    const days=collectDays();
+    let msg="Hey Elias! "+E.herz+" Ja, ich will mit dir auf ein Date!\n\n";
+    if(days.length===1){
+      msg+=E.kalender+" Tag: "+dayLine(days[0])+"\n";
+    }else{
+      msg+=E.kalender+" Diese Tage passen mir:\n";
+      days.forEach(d=> msg+="   • "+dayLine(d)+"\n");
+    }
+    if(actInput.value.trim()) msg+=E.idee+" Idee: "+actInput.value.trim()+"\n";
+    if(locInput.value.trim()) msg+=E.ort+" Wo: "+locInput.value.trim()+"\n";
+    if(msgInput.value.trim()) msg+="\n"+msgInput.value.trim();
+    return msg;
+  }
+  function update(){
+    const ok=collectDays().length>0;
+    notifyBtn.disabled=!ok;
+    if(ok){ preview.classList.add("show"); previewText.textContent=buildMessage(); }
+    else preview.classList.remove("show");
+  }
+  actInput.addEventListener("input",update);
+  locInput.addEventListener("input",update);
+  msgInput.addEventListener("input",update);
+
+  function openWhatsApp(text){
+    const url="https://api.whatsapp.com/send?phone="+ELIAS_NUMBER+"&text="+encodeURIComponent(text);
+    window.location.href=url;
+  }
+  notifyBtn.addEventListener("click",()=>{
+    if(notifyBtn.disabled) return;
+    burst();
+    const msg=buildMessage();
+    setTimeout(()=>openWhatsApp(msg),250);
+  });
+
+  // ===== NO flow =====
+  const noBtn=$("noBtn"), yesBtn=$("yesBtn"),
+        title=$("ask-title"), imgAsk=$("img-ask"), emoAsk=$("emo-ask");
+  let noStage=0;
+  function setMedia(gifFile,emoji){
+    emoAsk.textContent=emoji; emoAsk.style.display="inline-block"; imgAsk.style.display="none";
+    imgAsk.onload=()=>{ if(imgAsk.naturalWidth>0){imgAsk.style.display="block";emoAsk.style.display="none";} };
+    imgAsk.onerror=()=>{ imgAsk.style.display="none"; };
+    imgAsk.src=gifFile+"?t="+Date.now();
+    if(imgAsk.complete && imgAsk.naturalWidth>0){imgAsk.style.display="block";emoAsk.style.display="none";}
+  }
+  noBtn.addEventListener("click",()=>{
+    noStage++;
+    if(noStage===1){
+      setMedia("gif-nein-1.gif","😳");
+      title.textContent="Ganz sicher dass du kein Date willst?";
+      yesBtn.textContent="Ja, ein Date mit dir 💖";
+      noBtn.textContent="Nein, kein Date mit dir";
+    }else if(noStage===2){
+      setMedia("gif-nein-2.gif","😿😭");
+      title.textContent="Ganz sicher? Ich bin dann ganz traurig 😿😭";
+      yesBtn.textContent="Okay okay, ja! 💕";
+      noBtn.textContent="Nein";
+    }else{
+      openWhatsApp("Hey Elias, ich hab deine Date-Seite gesehen. Ich m\u00F6chte kein Date.");
+    }
+  });
+
+  // Initial: erste Tag-Karte erst jetzt, wenn alle const/Funktionen existieren
+  addDayCard();
+
+  function burst(){
+    const emos=["💖","🎉","✨","💕","🌸","💞"];
+    for(let i=0;i<30;i++){
+      const c=document.createElement("span");
+      c.textContent=emos[Math.floor(Math.random()*emos.length)];
+      c.style.cssText="position:fixed;left:50%;top:40%;font-size:"+(14+Math.random()*18)+"px;z-index:99;pointer-events:none;";
+      document.body.appendChild(c);
+      const ang=Math.random()*Math.PI*2, dist=130+Math.random()*200;
+      const x=Math.cos(ang)*dist, y=Math.sin(ang)*dist-100;
+      c.animate([
+        {transform:"translate(-50%,-50%) scale(.4)",opacity:1},
+        {transform:"translate(calc(-50% + "+x+"px), calc(-50% + "+y+"px)) scale(1)",opacity:0}
+      ],{duration:1100+Math.random()*600,easing:"cubic-bezier(.2,.8,.3,1)"}).onfinish=()=>c.remove();
+    }
+  }
+</script>
+</body>
+</html>
